@@ -7,7 +7,7 @@
 
 it is a sister project to `plutosdr-fft-log` which brings support to many of the most popular SDRs
 
-> this project has only been tested with the `plutosdr` driver, i tried to keep the device initialisation as generic as possible, but some devices may require minimal source code modification -- feel free to create an issue if this is the case
+> this project has only been tested with the `plutosdr` and `rtlsdr` driver, i tried to keep the device initialisation as generic as possible, but some devices may require minimal source code modification -- feel free to create an issue if this is the case
 
 > **soapysdr-fft-log** uses the SoapySDR module for the gnuradio python library, please refer to the [SoapySDR Wiki](https://github.com/pothosware/SoapyPlutoSDR/wiki) page for more information
 
