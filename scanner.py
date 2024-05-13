@@ -21,7 +21,7 @@ def signal_handler(sig, frame):
     sys.exit()
 
 class scan_python(gr.top_block):
-    def __init__(self, driver, device_args, samp_rate, rf_bandwidth, freq, fft_size, output_file):
+    def __init__(self, driver, device_args, samp_rate, rf_bandwidth, gain, freq, fft_size, output_file):
         gr.top_block.__init__(self, "Not titled yet", catch_exceptions=True)
         self.driver = driver
         self.device_args = device_args
@@ -29,6 +29,7 @@ class scan_python(gr.top_block):
         self.rf_bandwidth = rf_bandwidth
         self.freq = freq
         self.fft_size = fft_size
+        self.gain = gain
         self.output_file = output_file
 
         self.logpwrfft_x_0 = logpwrfft.logpwrfft_c(
@@ -54,7 +55,7 @@ class scan_python(gr.top_block):
         self.soapy_source_0.set_bandwidth(0, rf_bandwidth)
         self.soapy_source_0.set_gain_mode(0, False)
         self.soapy_source_0.set_frequency(0, freq)
-        self.soapy_source_0.set_gain(0, 60)
+        self.soapy_source_0.set_gain(0, int(gain))
 
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_float*fft_size, output_file, True)
         self.blocks_file_sink_0.set_unbuffered(True)
@@ -86,7 +87,7 @@ class scan_python(gr.top_block):
         except Exception as e:
             print("Failed to truncate file:", str(e))
 
-def scan_frequency_range(driver, device_args, start_freq, end_freq, bandwidth, samplerate, fftsize, frames, output_file):
+def scan_frequency_range(driver, device_args, start_freq, end_freq, gain, bandwidth, samplerate, fftsize, frames, output_file):
     num_steps = int((end_freq - start_freq) / bandwidth) + 1
     all_data = []
 
@@ -94,7 +95,7 @@ def scan_frequency_range(driver, device_args, start_freq, end_freq, bandwidth, s
         current_freq = start_freq + step * bandwidth
         print(f"Scanning {int(current_freq / 1e6)} MHz")
         
-        tb = scan_python(driver, device_args, samplerate, bandwidth, current_freq, fftsize, output_file)
+        tb = scan_python(driver, device_args, samplerate, bandwidth, gain, current_freq, fftsize, output_file)
         tb.start_and_wait_for_data(fftsize * 4 * frames * (step + 1))
     
     tb.stop()
@@ -151,7 +152,7 @@ def update_data(args, line, scatter, ax, fig):
             os.makedirs(args.dir)
 
         output_file = os.path.join(args.dir, f'{int(args.start/1e6)}_{int(args.end/1e6)}_{int(args.bandwidth/1e6)}_{args.fftsize}_{args.frames}_{ts}.bin')
-        rows = scan_frequency_range(args.driver, args.args, args.sdr_start, args.sdr_end, args.bandwidth, args.samplerate, args.fftsize, args.frames, output_file)
+        rows = scan_frequency_range(args.driver, args.args, args.sdr_start, args.sdr_end, args.gain, args.bandwidth, args.samplerate, args.fftsize, args.frames, output_file)
         frequencies = np.linspace(args.start / 1e6, args.end / 1e6, len(rows))
 
         try:
@@ -195,6 +196,7 @@ def main():
     parser.add_argument("--driver", type=str, help="SoapySDR driver for the SDR device")
     parser.add_argument("--args", type=str, default="", help="Device arguments for the SoapySDR device")
     parser.add_argument("--dir", type=str, default="./fft", help="Directory to save FFT files")
+    parser.add_argument("--gain", type=float, default=60, help="Gain in dB")
     parser.add_argument("--bandwidth", type=MHz_to_Hz, default=10000000, help="Bandwidth per FFT in MHz")
     parser.add_argument("--samplerate", type=MHz_to_Hz, default=20000000, help="Sample rate in Hz")
     parser.add_argument("--start", type=MHz_to_Hz, default=90000000, help="Start Frequency in MHz")

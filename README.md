@@ -35,6 +35,7 @@ redpitaya | `ip=192.168.1.100`
 - `--driver`: the SoapySDR driver to use (required, see above)
 - `--args`: device-specific arguments to use (default blank)
 - `--dir`: directory to save FFT files (default: `./fft`)
+- `--gain`: gain in dB (default: 60)
 - `--bandwidth`: bandwidth per FFT in MHz, will be automatically adjusted if it doesn't fit evenly between start and end frequencies (default: 10)
 - `--samplerate`: sample rate per FFT in MHz (default: 20)
 - `--start`: start frequency in MHz (default: 90)
